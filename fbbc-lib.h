@@ -14,6 +14,7 @@ const double c = 0.299792458; // mm/ps
 double RZtoEta();
 //........................................................................
 struct Particle{
+	int id;
 	double E;
 	double P;
 	double Pz;
@@ -32,7 +33,8 @@ public:
 		time_prec(t_prec) {}
 
 	void SetParticleTimes(const vector<double> times);
-	vector<double> GetParticleTimes() const;
+	void AddParticleTime(const double time);
+	vector<double> GetParticleTimesOutput() const;
 
 private:
 	pair<double,double> phi_limit; //{phi1, phi2}
@@ -67,12 +69,14 @@ public:
 	}
 
 	void AddParticle(const Particle part);
+	vector<vector<double>> GetSectorsTimesOutput();
+	const vector<double> GetTimesOutputs();
 
 private:
 	vector<vector<MCPlateSector>> mc_sectors;
 	double Z_coord;
 	double Rin;
-	double Rout; // inner and outter radiuses, in mm	
+	double Rout; // inner and outter radiuses, in mm
 	size_t Rad_sec_num = 1;
 	size_t Phi_sec_num = 1;
   vector<Particle> particles;
