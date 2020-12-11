@@ -22,7 +22,12 @@ void MCSector::SetParticleTimes(const vector<double> times){
 
 vector<double> MCSector::GetParticleTimes() const{
 	vector<double> result;
-
+	result.push_back(part_times.front());
+	for(const auto t : part_times){
+		if(t > part_times.back()+time_prec)
+			result.push_back(t);
+	}
+	return result;
 }
 
 

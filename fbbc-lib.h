@@ -19,8 +19,8 @@ public:
 		time_prec(t_prec) {}
 
 	void SetParticleTimes(const vector<double> times);
-
 	vector<double> GetParticleTimes() const;
+
 private:
 	pair<double> phi_limit; //{phi1, phi2}
 	pair<double> r_limit;   // {r1, r2}
