@@ -8,19 +8,7 @@ double RZtoEta(double r, double z){
 }
 //--------------------------------------
 
-void MCPlateSector::SetParticleTimes(const vector<double> times){
-	std::default_random_engine generator;
-	std::uniform_real_distribution<double> distribution(0.0,1.0);
-	for(const auto t : times){
-		double number = distribution(generator);
-		if(number <= efficiency){
-			part_times.push_back(t);
-		} else continue;
-	}
-	part_times.sort();
-}
-//#
-vector<double> MCPlateSector::GetParticleTimesOutput() const{
+vector<double> MCPlateSector::GetTimesOutput() const{
 	vector<double> result;
 	result.push_back(part_times.front());
 	for(const auto t : part_times){
@@ -39,16 +27,24 @@ void MCPlateSector::AddParticle(const Particle part){
 		part_times.push_back((part.P/part.Pz)*(Z_coord-part.Z))/(c*c));
 	}
 }
+//#
+const pair<double, double> MCPlateSector::GetRLimits() const {
+	return r_limit;
+}
+//#
+const pair<double, double> MCPlateSector::GetPhiLimits() const{
+	return phi_limit;
+}
+//#
+const pair<double, double> MCPlateSector::GetEtaLimits() const {
+	return {RZtoEta(r_limit.second, Z_coord), RZtoEta(r_limit.first, Z_coord)};
+}
 //.............................................................
 void MCPlate::AddParticle(const Particle part){
 		double pseudorapidity = atanh(part.Pz/part.P);
 		if (pseudorapidity > RZtoEta(Rout, Z_coord-part.Z) && pseudorapidity < RZtoEta(Rin, Z_coord-part.Z)){
 			particles.push_back(part);
 		}
-}
-//#
-vector<vector<double>> MCPlate::GetSectorsTimesOutput() {
-	for(const auto part : particles){
 		double pseudorapidity = atanh(part.Pz/part.P);
 		//double detect_time = (part.P/part.Pz)*(Z_coord-part.Z))/(c*c);
 		bool is_matched = false;
@@ -64,13 +60,14 @@ vector<vector<double>> MCPlate::GetSectorsTimesOutput() {
 				}
 			}
 		}
-	}
-
+}
+//#
+vector<vector<double>> MCPlate::GetSectorsTimesOutput() {
 	vector<vector<double>> result(Rad_sec_num);
 	for(size_t i = 0; i < result.size(); i++){
 		result[i].resize(Phi_sec_num);
 		for(size_t j = 0; j < result[i].size; j++){
-			result[i][j] = mc_sectors[i][j].GetParticleTimesOutput();
+			result[i][j] = mc_sectors[i][j].GetTimesOutput();
 		}
 	}
 
@@ -88,12 +85,16 @@ const vector<double> MCPlate::GetTimesOutput(){
 	return output;
 }
 //#
-const pair<double, double> MCPlate::GetRLimits() const {
-	return r_limit;
+const pair<double, double> MCPlate::GetEtaLimits() const {
+	return {RZtoEta(Rout, Z_coord), RZtoEta(Rin, Z_coord)};
 }
 //#
-const pair<double, double> MCPlate::GetPhiLimits() const{
-	return phi_limit;
+const pair<double, double> MCPlate::GetRLimits() const {
+	return {Rin, Rout};
+}
+//#
+const double GetTimePrecision() const{
+	return time_prec;
 }
 //..............................................................
 
@@ -104,4 +105,44 @@ void DetectorFacility::SetParticles(const vector<Particle> parts){
 			plate.AddParticle();
 		}
 	}
+}
+//#
+vector<vector<double>> DetectorFacility::GetPlatesTimes() const {
+	vector<vector<double>> result;
+	for(const auto [z, plate] : mcplates){
+		result.push_back(plate.GetTimesOutput());
+	}
+	return result;
+}
+//#
+vector<double> DetectorFacility::GetPlatesDistances() const{
+	vector<double> result;
+	for(const auto [z, plate] : mcplates){
+		result.push_back(z);
+	}
+	return result;
+}
+//#
+vector<pair<double,double>> DetectorFacility::GetPlatesPseudorapidities() const{
+	vector<pair<double,double>> result;
+	for(const auto [z, plate] : mcplates){
+		result.push_back(plate.GetEtaLimits());
+	}
+	return result;
+}
+//#
+vector<pair<double,double>> DetectorFacility::GetPlatesRadiuses() const{
+	vector<pair<double,double>> result;
+	for(const auto [z, plate] : mcplates){
+		result.push_back(plate.GetRLimits());
+	}
+	return result;
+}
+//#
+vector<double> DetectorFacility::GetTimePrecisions() const{
+	vector<double> result;
+	for(const auto [z, plate] : mcplates){
+		result.push_back(plate.GetTimePrecision());
+	}
+	return result;
 }

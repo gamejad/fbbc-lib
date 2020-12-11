@@ -27,19 +27,21 @@ struct Particle{
 //........................................................................
 class MCPlateSector {
 public:
-	MCPlateSector(pair<double,double> phi_pair, pair<double,double> r_pair, double eff, double t_prec):
+	MCPlateSector(double z, pair<double,double> phi_pair, pair<double,double> r_pair, double eff, double t_prec):
+		Z_coord(z),
 		phi_limit(phi_pair),
 		r_limit(r_pair),
 		efficiency(eff),
 		time_prec(t_prec) {}
 
-	void SetParticleTimes(const vector<double> times);
 	void AddParticle(const Particle part);
-	vector<double> GetParticleTimesOutput() const;
+	vector<double> GetTimesOutput() const;
 	const pair<double,double> GetRLimits() const;
 	const pair<double,double> GetPhiLimits() const;
+	const pair<double, double> GetEtaLimits() const;
 
 private:
+	double Z_coord;
 	pair<double,double> phi_limit; //{phi1, phi2}
 	pair<double,double> r_limit;   // {r1, r2}
 	vector<double> part_times;
@@ -66,7 +68,7 @@ public:
 				pair<double,double> rads = {rin + i*delta_r, rin+(i+1)*delta_r};
 				for(int j = 0; j < phi_num; j++){
 					pair<double,double> phis = {j*delta_phi, (j+1)*delta_phi};
-					MCPlateSector plate_sec(rads, phis, efficiency, time_prec);
+					MCPlateSector plate_sec(z, rads, phis, efficiency, time_prec);
 					mc_sectors[i].push_back(plate_sec);
 				}
 			}
@@ -75,6 +77,9 @@ public:
 	void AddParticle(const Particle part);
 	vector<vector<double>> GetSectorsTimesOutput();
 	const vector<double> GetTimesOutputs();
+	const pair<double, double> GetEtaLimits() const;
+	const pair<double,double> GetRLimits() const;
+	const double GetTimePrecision() const;
 
 private:
 	vector<vector<MCPlateSector>> mc_sectors;
@@ -100,6 +105,11 @@ public:
         }
 
 		void SetParticles(const vector<Particle> parts);
+		vector<vector<double>> GetPlatesTimes() const;
+		vector<double> GetPlatesDistances() const;
+		vector<pair<double,double>> GetPlatesPseudorapidities() const;
+		vector<pair<double,double>> GetPlatesRadiuses() const;
+		vector<double> GetTimePrecisions() const;
 
 
 private:
