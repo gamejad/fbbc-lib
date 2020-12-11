@@ -3,12 +3,13 @@
 
 #include <vector>
 #include <map>
-#include <pair>
 #include <random>
 #include <cmath>
 
-const Float_t PI = 3.14159265359;
-const Float_t c = 0.299792458; // mm/ps
+using namespace std;
+
+const double PI = 3.14159265359;
+const double c = 0.299792458; // mm/ps
 
 double RZtoEta();
 //........................................................................
@@ -19,12 +20,12 @@ struct Particle{
 	double Phi;
 
 	double Z;
-}
+};
 
 //........................................................................
-class MCPlateSector: public MCPlate {
+class MCPlateSector {
 public:
-	MCSector(pair<double> phi_pair, pair<double> r_pair, double eff, double t_prec):
+	MCPlateSector(pair<double,double> phi_pair, pair<double,double> r_pair, double eff, double t_prec):
 		phi_limit(phi_pair),
 		r_limit(r_pair),
 		efficiency(eff),
@@ -34,10 +35,12 @@ public:
 	vector<double> GetParticleTimes() const;
 
 private:
-	pair<double> phi_limit; //{phi1, phi2}
-	pair<double> r_limit;   // {r1, r2}
+	pair<double,double> phi_limit; //{phi1, phi2}
+	pair<double,double> r_limit;   // {r1, r2}
 	vector<double> part_times;
-}
+	double efficiency = 1; // 1=100%
+	double time_prec = 0; //ps
+};
 
 //........................................................................
 class MCPlate {
@@ -54,10 +57,10 @@ public:
 			double delta_phi = 2*PI/phi_num;
 			mc_sectors.resize(rad_num);
 			for(int i = 0; i < rad_num; i++){
-				pair<double> rads = {rin + i*delta_r, rin+(i+1)*delta_r};
+				pair<double,double> rads = {rin + i*delta_r, rin+(i+1)*delta_r};
 				for(int j = 0; j < phi_num; j++){
-					pair<double> phis = {j*delta_phi, (j+1)*delta_phi};
-					MCPlateSector plate_sec(z, rads, phis);
+					pair<double,double> phis = {j*delta_phi, (j+1)*delta_phi};
+					MCPlateSector plate_sec(rads, phis, efficiency, time_prec);
 					mc_sectors[i].push_back(plate_sec);
 				}
 			}
@@ -66,15 +69,16 @@ public:
 	void AddParticle(const Particle part);
 
 private:
-	vector<vector<MCSector>> mc_sectors;
-	double Rin, Rout; // inner and outter radiuses, in mm
+	vector<vector<MCPlateSector>> mc_sectors;
 	double Z_coord;
+	double Rin;
+	double Rout; // inner and outter radiuses, in mm	
 	size_t Rad_sec_num = 1;
 	size_t Phi_sec_num = 1;
-  vector<Particles> particles;
+  vector<Particle> particles;
 	double efficiency = 1; // 1=100%
 	double time_prec = 0; //ps
-}
+};
 
 //........................................................................
 class DetectorFacility {
@@ -83,7 +87,7 @@ public:
             plate_num = plt_coords.size();
 						for(int i = 0; i < plate_num; i++){
 							MCPlate plate(plt_coords.at(i), rin, rout, rad_num, phi_num, eff, t_prec);
-							mcplates[plt_coords.at(i)] = plate;
+							mcplates.insert({plt_coords.at(i), plate});
 						}
         }
 
@@ -93,5 +97,5 @@ public:
 private:
 	map<double, MCPlate > mcplates;
 	int plate_num = 0;
-	vector<Particles> particles;
-}
+	vector<Particle> particles;
+};
