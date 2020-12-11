@@ -5,6 +5,7 @@
 #include <map>
 #include <random>
 #include <cmath>
+#include <algorithm>
 
 using namespace std;
 
@@ -33,13 +34,16 @@ public:
 		time_prec(t_prec) {}
 
 	void SetParticleTimes(const vector<double> times);
-	void AddParticleTime(const double time);
+	void AddParticle(const Particle part);
 	vector<double> GetParticleTimesOutput() const;
+	const pair<double,double> GetRLimits() const;
+	const pair<double,double> GetPhiLimits() const;
 
 private:
 	pair<double,double> phi_limit; //{phi1, phi2}
 	pair<double,double> r_limit;   // {r1, r2}
 	vector<double> part_times;
+	vector<Particle> particles;
 	double efficiency = 1; // 1=100%
 	double time_prec = 0; //ps
 };

@@ -30,12 +30,13 @@ vector<double> MCPlateSector::GetParticleTimesOutput() const{
 	return result;
 }
 //#
-void AddParticleTime(const double time){
+void MCPlateSector::AddParticle(const Particle part){
 	std::default_random_engine generator;
 	std::uniform_real_distribution<double> distribution(0.0,1.0);
 	double number = distribution(generator);
 	if(number <= efficiency){
-		part_times.push_back(time);
+		particles.push_back(part);
+		part_times.push_back((part.P/part.Pz)*(Z_coord-part.Z))/(c*c));
 	}
 }
 //.............................................................
@@ -46,17 +47,18 @@ void MCPlate::AddParticle(const Particle part){
 		}
 }
 //#
-vector<vector<double>> GetSectorsTimesOutput() {
+vector<vector<double>> MCPlate::GetSectorsTimesOutput() {
 	for(const auto part : particles){
 		double pseudorapidity = atanh(part.Pz/part.P);
-		double detect_time = (part.P/part.Pz)*(Z_coord-part.Z))/(c*c);
+		//double detect_time = (part.P/part.Pz)*(Z_coord-part.Z))/(c*c);
 		bool is_matched = false;
 		for(const auto r : mc_sectors){
 			if(is_matched) break;
 			for(const auto sec : r){
-				if (pseudorapidity > RZtoEta(..., Z_coord-part.Z) && pseudorapidity < RZtoEta(..., Z_coord-part.Z)
-						&& part.Phi > ... & part.Phi < ....){
-					sec.AddParticleTime(detect_time);
+				if (pseudorapidity > RZtoEta(min(sec.GetRLimits()), Z_coord-part.Z) &&
+						pseudorapidity < RZtoEta(max(sec.GetRLimits()), Z_coord-part.Z) &&
+						part.Phi > min(sec.GetPhiLimits()) & part.Phi < max(sec.GetPhiLimits())){
+					sec.AddParticle(part);
 					is_matched = true;
 					break;
 				}
@@ -75,7 +77,7 @@ vector<vector<double>> GetSectorsTimesOutput() {
 	return result;
 }
 //#
-const vector<double> GetTimesOutput(){
+const vector<double> MCPlate::GetTimesOutput(){
 	auto v = GetSectorsTimesOutput();
 	vector<double> output;
 	for(auto vi : v){
@@ -84,6 +86,14 @@ const vector<double> GetTimesOutput(){
 		}
 	}
 	return output;
+}
+//#
+const pair<double, double> MCPlate::GetRLimits() const {
+	return r_limit;
+}
+//#
+const pair<double, double> MCPlate::GetPhiLimits() const{
+	return phi_limit;
 }
 //..............................................................
 
