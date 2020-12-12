@@ -24,7 +24,8 @@ void MCPlateSector::AddParticle(const Particle part){
 	double number = distribution(generator);
 	if(number <= efficiency){
 		particles.push_back(part);
-		part_times.push_back((part.P/part.Pz)*(Z_coord-part.Z))/(c*c));
+		double t = ((part.P/part.Pz)*(Z_coord-part.Z))/(c*c);
+		part_times.push_back(t);
 	}
 }
 //#
@@ -45,15 +46,15 @@ void MCPlate::AddParticle(const Particle part){
 		if (pseudorapidity > RZtoEta(Rout, Z_coord-part.Z) && pseudorapidity < RZtoEta(Rin, Z_coord-part.Z)){
 			particles.push_back(part);
 		}
-		double pseudorapidity = atanh(part.Pz/part.P);
 		//double detect_time = (part.P/part.Pz)*(Z_coord-part.Z))/(c*c);
 		bool is_matched = false;
-		for(const auto r : mc_sectors){
+		for(auto r : mc_sectors){
 			if(is_matched) break;
-			for(const auto sec : r){
-				if (pseudorapidity > RZtoEta(min(sec.GetRLimits()), Z_coord-part.Z) &&
-						pseudorapidity < RZtoEta(max(sec.GetRLimits()), Z_coord-part.Z) &&
-						part.Phi > min(sec.GetPhiLimits()) & part.Phi < max(sec.GetPhiLimits())){
+			for(auto sec : r){
+				if (pseudorapidity > RZtoEta(min(sec.GetRLimits().first, sec.GetRLimits().second), Z_coord-part.Z) &&
+						pseudorapidity < RZtoEta(max(sec.GetRLimits().first, sec.GetRLimits().second), Z_coord-part.Z) &&
+						part.Phi > min(sec.GetPhiLimits().first, sec.GetPhiLimits().second) &&
+						part.Phi < max(sec.GetPhiLimits().first, sec.GetPhiLimits().second)){
 					sec.AddParticle(part);
 					is_matched = true;
 					break;
@@ -62,15 +63,14 @@ void MCPlate::AddParticle(const Particle part){
 		}
 }
 //#
-vector<vector<double>> MCPlate::GetSectorsTimesOutput() {
-	vector<vector<double>> result(Rad_sec_num);
+vector<vector<vector<double>>> MCPlate::GetSectorsTimesOutput() {
+	vector<vector<vector<double>>> result(Rad_sec_num);
 	for(size_t i = 0; i < result.size(); i++){
 		result[i].resize(Phi_sec_num);
-		for(size_t j = 0; j < result[i].size; j++){
+		for(size_t j = 0; j < result[i].size(); j++){
 			result[i][j] = mc_sectors[i][j].GetTimesOutput();
 		}
 	}
-
 	return result;
 }
 //#
@@ -79,7 +79,9 @@ const vector<double> MCPlate::GetTimesOutput(){
 	vector<double> output;
 	for(auto vi : v){
 		for(auto vij: vi){
-			output.push_back(move(vij));
+			for(auto i : vij){
+				output.push_back(move(i));
+			}
 		}
 	}
 	return output;
@@ -93,7 +95,7 @@ const pair<double, double> MCPlate::GetRLimits() const {
 	return {Rin, Rout};
 }
 //#
-const double GetTimePrecision() const{
+const double MCPlate::GetTimePrecision() const{
 	return time_prec;
 }
 //..............................................................
@@ -102,14 +104,14 @@ void DetectorFacility::SetParticles(const vector<Particle> parts){
 	particles = parts;
 	for(const auto part : parts){
 		for(auto [z, plate] : mcplates){
-			plate.AddParticle();
+			plate.AddParticle(part);
 		}
 	}
 }
 //#
-vector<vector<double>> DetectorFacility::GetPlatesTimes() const {
+vector<vector<double>> DetectorFacility::GetPlatesTimes() {
 	vector<vector<double>> result;
-	for(const auto [z, plate] : mcplates){
+	for( auto [z, plate] : mcplates){
 		result.push_back(plate.GetTimesOutput());
 	}
 	return result;

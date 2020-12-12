@@ -75,8 +75,8 @@ public:
 	}
 
 	void AddParticle(const Particle part);
-	vector<vector<double>> GetSectorsTimesOutput();
-	const vector<double> GetTimesOutputs();
+	vector<vector<vector<double>>> GetSectorsTimesOutput();
+	const vector<double> GetTimesOutput();
 	const pair<double, double> GetEtaLimits() const;
 	const pair<double,double> GetRLimits() const;
 	const double GetTimePrecision() const;
@@ -105,7 +105,7 @@ public:
         }
 
 		void SetParticles(const vector<Particle> parts);
-		vector<vector<double>> GetPlatesTimes() const;
+		vector<vector<double>> GetPlatesTimes() ;
 		vector<double> GetPlatesDistances() const;
 		vector<pair<double,double>> GetPlatesPseudorapidities() const;
 		vector<pair<double,double>> GetPlatesRadiuses() const;
