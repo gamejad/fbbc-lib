@@ -2,118 +2,69 @@
 #pragma once
 
 #include <vector>
-#include <map>
+#include <set>
 #include <random>
 #include <cmath>
 #include <algorithm>
 
 using namespace std;
+using PartTime = pair<double, int>; // {time, partID}
 
 const double PI = 3.14159265359;
-const double c = 0.299792458; // mm/ps
 
 double RZtoEta();
 //........................................................................
 struct Particle{
-	int id;
+	int Id;
 	double E;
 	double P;
 	double Pz;
 	double Phi;
-
 	double Z;
 };
-
 //........................................................................
-class MCPlateSector {
+
+class FBBCDetector{
 public:
-	MCPlateSector(double z, pair<double,double> phi_pair, pair<double,double> r_pair, double eff, double t_prec):
-		Z_coord(z),
-		phi_limit(phi_pair),
-		r_limit(r_pair),
+	FBBCDetector(vector<double> mcp_dists, double rin, double rout, size_t rad_num, size_t ang_num, double eff, double t_pr):
+		plates_distances(mcp_dists),
+		plates_number(mcp_dists.size()),
+		r_in(rin),
+		r_out(rout),
+		rad_sec_num(rad_num),
+		ang_sec_num(ang_num),
 		efficiency(eff),
-		time_prec(t_prec) {}
+		time_prec(t_pr)
+		{
+			sort(plates_distances.begin(), plates_distances.end());
+		}
 
-	void AddParticle(const Particle part);
-	vector<double> GetTimesOutput() const;
-	const pair<double,double> GetRLimits() const;
-	const pair<double,double> GetPhiLimits() const;
-	const pair<double, double> GetEtaLimits() const;
-
-private:
-	double Z_coord;
-	pair<double,double> phi_limit; //{phi1, phi2}
-	pair<double,double> r_limit;   // {r1, r2}
-	vector<double> part_times;
-	vector<Particle> particles;
-	double efficiency = 1; // 1=100%
-	double time_prec = 0; //ps
-};
-
-//........................................................................
-class MCPlate {
-public:
-	MCPlate(double z, double rin, double rout, double rad_num, double phi_num, double eff, double t_prec):
-		Z_coord(z),
-		Rin(rin),
-		Rout(rout),
-		Rad_sec_num(rad_num),
-		Phi_sec_num(phi_num),
-		efficiency(eff),
-		time_prec(t_prec) {
-			double delta_r = (rout-rin)/rad_num;
-			double delta_phi = 2*PI/phi_num;
-			mc_sectors.resize(rad_num);
-			for(int i = 0; i < rad_num; i++){
-				pair<double,double> rads = {rin + i*delta_r, rin+(i+1)*delta_r};
-				for(int j = 0; j < phi_num; j++){
-					pair<double,double> phis = {j*delta_phi, (j+1)*delta_phi};
-					MCPlateSector plate_sec(z, rads, phis, efficiency, time_prec);
-					mc_sectors[i].push_back(plate_sec);
-				}
-			}
-	}
-
-	void AddParticle(const Particle part);
-	vector<vector<vector<double>>> GetSectorsTimesOutput();
-	const vector<double> GetTimesOutput();
-	const pair<double, double> GetEtaLimits() const;
-	const pair<double,double> GetRLimits() const;
-	const double GetTimePrecision() const;
-
-private:
-	vector<vector<MCPlateSector>> mc_sectors;
-	double Z_coord;
-	double Rin;
-	double Rout; // inner and outter radiuses, in mm
-	size_t Rad_sec_num = 1;
-	size_t Phi_sec_num = 1;
-  vector<Particle> particles;
-	double efficiency = 1; // 1=100%
-	double time_prec = 0; //ps
-};
-
-//........................................................................
-class DetectorFacility {
-public:
-    DetectorFacility(vector<double> plt_coords, double rin, double rout, double rad_num, double phi_num, double eff, double t_prec) {
-            plate_num = plt_coords.size();
-						for(int i = 0; i < plate_num; i++){
-							MCPlate plate(plt_coords.at(i), rin, rout, rad_num, phi_num, eff, t_prec);
-							mcplates.insert({plt_coords.at(i), plate});
-						}
-        }
+		const size_t GetPlatesNumber() const;
+		const double GetEfficiency() const;
+		const double GetTimePrecision() const;
+		const double GetRInner() const;
+		const double GetROuter() const;
+		const size_t GetRadialSecNumber() const;
+		const size_t GetAngularSecNumber() const;
+		const vector<double> GetPlatesDistances() const;
+		const vector<vector<double>> GetPlatesPseudorapidity() const;
 
 		void SetParticles(const vector<Particle> parts);
-		vector<vector<double>> GetPlatesTimes() ;
-		vector<double> GetPlatesDistances() const;
-		vector<pair<double,double>> GetPlatesPseudorapidities() const;
-		vector<pair<double,double>> GetPlatesRadiuses() const;
-		vector<double> GetTimePrecisions() const;
-
+		vector<vector<PartTime>> GetOutput();
 
 private:
-	map<double, MCPlate > mcplates;
-	int plate_num = 0;
-	vector<Particle> particles;
+	vector<double> plates_distances; // MCPs' distances from center (sorted)
+	size_t plates_number; //number of MCPs
+	double r_in; // mm, inner radius
+	double r_out; //mm, outer radius
+	size_t rad_sec_num;
+	size_t ang_sec_num;
+	double efficiency; // efficiency of MCP, 1 = 100%
+	double time_prec; // ps,
+
+	vector<Particle> particles; // particles in event
+
+	vector<PartTime> PassThrowMCP(const size_t mcp_num); //return vector<{time, PartID}>
+	vector<vector<PartTime>> PassThrowDetector(); // return vector<PassThrowMCP>
+
 };

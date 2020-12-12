@@ -1,150 +1,137 @@
 //fbbc-lib...
 #include "fbbc-lib.h"
+#include <exception>
+#include <list>
 
 
 double RZtoEta(double r, double z){
 	double theta = atan(r/z);
+	if (theta < 0) theta += PI;
 	return -log(tan(theta/2));
 }
 //--------------------------------------
 
-vector<double> MCPlateSector::GetTimesOutput() const{
-	vector<double> result;
-	result.push_back(part_times.front());
-	for(const auto t : part_times){
-		if(t > part_times.back()+time_prec)
-			result.push_back(t);
+const size_t FBBCDetector::GetPlatesNumber() const {
+	return plates_number;
+}
+////
+const double FBBCDetector::GetEfficiency() const{
+	return efficiency;
+}
+////
+const double FBBCDetector::GetTimePrecision() const{
+	return time_prec;
+}
+////
+const double FBBCDetector::GetRInner() const{
+	return r_in;
+}
+////
+const double FBBCDetector::GetROuter() const{
+	return r_out;
+}
+////
+const size_t FBBCDetector::GetRadialSecNumber() const{
+	return rad_sec_num;
+}
+////
+const size_t FBBCDetector::GetAngularSecNumber() const{
+	return ang_sec_num;
+}
+////
+const vector<double> FBBCDetector::GetPlatesDistances() const{
+	return plates_distances;
+}
+////
+const vector<vector<double>> FBBCDetector::GetPlatesPseudorapidity() const{
+	vector<vector<double>> result;
+	for(size_t i = 0; i < plates_number; i++){
+		result.push_back(
+			{min(RZtoEta(r_in, plates_distances.at(i)), RZtoEta(r_out, plates_distances.at(i))),
+			 max(RZtoEta(r_in, plates_distances.at(i)), RZtoEta(r_out, plates_distances.at(i)))}
+		);
 	}
 	return result;
 }
-//#
-void MCPlateSector::AddParticle(const Particle part){
+////
+void FBBCDetector::SetParticles(const vector<Particle> parts){
+	particles = parts;
+}
+////
+vector<PartTime> FBBCDetector::PassThrowMCP(const size_t mcp_num){
+	const double c = 0.299792458; // mm/ps
 	std::default_random_engine generator;
 	std::uniform_real_distribution<double> distribution(0.0,1.0);
-	double number = distribution(generator);
-	if(number <= efficiency){
-		particles.push_back(part);
-		double t = ((part.P/part.Pz)*(Z_coord-part.Z))/(c*c);
-		part_times.push_back(t);
-	}
-}
-//#
-const pair<double, double> MCPlateSector::GetRLimits() const {
-	return r_limit;
-}
-//#
-const pair<double, double> MCPlateSector::GetPhiLimits() const{
-	return phi_limit;
-}
-//#
-const pair<double, double> MCPlateSector::GetEtaLimits() const {
-	return {RZtoEta(r_limit.second, Z_coord), RZtoEta(r_limit.first, Z_coord)};
-}
-//.............................................................
-void MCPlate::AddParticle(const Particle part){
-		double pseudorapidity = atanh(part.Pz/part.P);
-		if (pseudorapidity > RZtoEta(Rout, Z_coord-part.Z) && pseudorapidity < RZtoEta(Rin, Z_coord-part.Z)){
-			particles.push_back(part);
-		}
-		//double detect_time = (part.P/part.Pz)*(Z_coord-part.Z))/(c*c);
-		bool is_matched = false;
-		for(auto r : mc_sectors){
-			if(is_matched) break;
-			for(auto sec : r){
-				if (pseudorapidity > RZtoEta(min(sec.GetRLimits().first, sec.GetRLimits().second), Z_coord-part.Z) &&
-						pseudorapidity < RZtoEta(max(sec.GetRLimits().first, sec.GetRLimits().second), Z_coord-part.Z) &&
-						part.Phi > min(sec.GetPhiLimits().first, sec.GetPhiLimits().second) &&
-						part.Phi < max(sec.GetPhiLimits().first, sec.GetPhiLimits().second)){
-					sec.AddParticle(part);
-					is_matched = true;
-					break;
+	vector<vector<vector<PartTime>>> sector_counts(rad_sec_num, vector<vector<PartTime>>(ang_sec_num, vector<PartTime>())) ;
+
+	try{
+		for(const auto part : particles)
+		{
+			double detect_dist  = plates_distances.at(mcp_num) - part.Z;
+			double eta_part = atanh(part.Pz/part.P);
+			double DR = (r_out-r_in)/rad_sec_num;
+			double DPHI = 2*PI/ang_sec_num;
+			if (eta_part > RZtoEta(r_in, detect_dist) || eta_part < RZtoEta(r_out, detect_dist) ) continue;
+			for(size_t r = 0; r < rad_sec_num; r++)
+			{
+				if (eta_part > RZtoEta(r_in+r*DR, detect_dist) || eta_part < RZtoEta(r_in+(r+1)*DR, detect_dist) ) continue;
+				for (size_t phi = 0; phi < ang_sec_num; phi++)
+				{
+					if (part.Phi > -PI+(phi+1)*DPHI || part.Phi < -PI+phi*DPHI ) continue;
+					double number = distribution(generator);
+					if (number > efficiency) continue;
+					double detect_time = (part.E/part.Pz)*detect_dist/(c*c);
+					sector_counts[r][phi].push_back({detect_time, part.Id});
 				}
 			}
 		}
-}
-//#
-vector<vector<vector<double>>> MCPlate::GetSectorsTimesOutput() {
-	vector<vector<vector<double>>> result(Rad_sec_num);
-	for(size_t i = 0; i < result.size(); i++){
-		result[i].resize(Phi_sec_num);
-		for(size_t j = 0; j < result[i].size(); j++){
-			result[i][j] = mc_sectors[i][j].GetTimesOutput();
-		}
-	}
-	return result;
-}
-//#
-const vector<double> MCPlate::GetTimesOutput(){
-	auto v = GetSectorsTimesOutput();
-	vector<double> output;
-	for(auto vi : v){
-		for(auto vij: vi){
-			for(auto i : vij){
-				output.push_back(move(i));
+
+		vector<vector<vector<PartTime>>> sector_counts_reduced(rad_sec_num, vector<vector<PartTime>>(ang_sec_num, vector<PartTime>())) ;
+
+		for(size_t r = 0; r < rad_sec_num; r++)
+		{
+			for (size_t phi = 0; phi < ang_sec_num; phi++)
+			{
+				sort(sector_counts[r][phi].begin(), sector_counts[r][phi].end());
+				for(auto p_t : sector_counts[r][phi]){
+					if(sector_counts_reduced[r][phi].size() == 0){
+						sector_counts_reduced[r][phi].push_back(move(p_t));
+					} else {
+						if(sector_counts_reduced[r][phi].back().first < p_t.first + time_prec){
+							sector_counts_reduced[r][phi].push_back(move(p_t));
+						} else continue;
+					}
+				}
 			}
 		}
-	}
-	return output;
-}
-//#
-const pair<double, double> MCPlate::GetEtaLimits() const {
-	return {RZtoEta(Rout, Z_coord), RZtoEta(Rin, Z_coord)};
-}
-//#
-const pair<double, double> MCPlate::GetRLimits() const {
-	return {Rin, Rout};
-}
-//#
-const double MCPlate::GetTimePrecision() const{
-	return time_prec;
-}
-//..............................................................
 
-void DetectorFacility::SetParticles(const vector<Particle> parts){
-	particles = parts;
-	for(const auto part : parts){
-		for(auto [z, plate] : mcplates){
-			plate.AddParticle(part);
+		vector<PartTime> result;
+		for(size_t r = 0; r < rad_sec_num; r++)
+		{
+			for (size_t phi = 0; phi < ang_sec_num; phi++)
+			{
+				for(auto p_t : sector_counts_reduced[r][phi]){
+					result.push_back(p_t);
+				}
+			}
 		}
+
+		return result;
+
+	} catch (const out_of_range& e) {
+			cerr << "Error! There is no MCP with number " << mcp_num << endl;
 	}
+
 }
-//#
-vector<vector<double>> DetectorFacility::GetPlatesTimes() {
-	vector<vector<double>> result;
-	for( auto [z, plate] : mcplates){
-		result.push_back(plate.GetTimesOutput());
+////
+vector<vector<PartTime>> FBBCDetector::PassThrowDetector(){
+	vector<vector<PartTime>> result(plates_number);
+	for(size_t i = 0; i < plates_number; i++){
+		result.push_back(PassThrowMCP(i));
 	}
 	return result;
 }
-//#
-vector<double> DetectorFacility::GetPlatesDistances() const{
-	vector<double> result;
-	for(const auto [z, plate] : mcplates){
-		result.push_back(z);
-	}
-	return result;
-}
-//#
-vector<pair<double,double>> DetectorFacility::GetPlatesPseudorapidities() const{
-	vector<pair<double,double>> result;
-	for(const auto [z, plate] : mcplates){
-		result.push_back(plate.GetEtaLimits());
-	}
-	return result;
-}
-//#
-vector<pair<double,double>> DetectorFacility::GetPlatesRadiuses() const{
-	vector<pair<double,double>> result;
-	for(const auto [z, plate] : mcplates){
-		result.push_back(plate.GetRLimits());
-	}
-	return result;
-}
-//#
-vector<double> DetectorFacility::GetTimePrecisions() const{
-	vector<double> result;
-	for(const auto [z, plate] : mcplates){
-		result.push_back(plate.GetTimePrecision());
-	}
-	return result;
+////
+vector<vector<PartTime>> FBBCDetector::GetOutput(){
+	return PassThrowDetector();
 }
