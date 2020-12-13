@@ -13,6 +13,7 @@ using PartTime = pair<double, int>; // {time, partID}
 const double PI = 3.14159265359;
 
 double RZtoEta();
+double GetRandomNumber(const double first=0, const double last=1);
 //........................................................................
 struct Particle{
 	int Id;

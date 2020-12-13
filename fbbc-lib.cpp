@@ -9,6 +9,13 @@ double RZtoEta(double r, double z){
 	if (theta < 0) theta += PI;
 	return -log(tan(theta/2));
 }
+////
+double GetRandomNumber(const double first=0, const double last=1){
+	std::random_device rd; // rd is a random seed
+	std::default_random_engine generator(rd());
+	std::uniform_real_distribution<double> distribution(first, last);
+	return distribution(generator);
+}
 //--------------------------------------
 
 const size_t FBBCDetector::GetPlatesNumber() const {
@@ -60,8 +67,6 @@ void FBBCDetector::SetParticles(const vector<Particle> parts){
 ////
 vector<PartTime> FBBCDetector::PassThrowMCP(const size_t mcp_num){
 	const double c = 0.299792458; // mm/ps
-	std::default_random_engine generator;
-	std::uniform_real_distribution<double> distribution(0.0,1.0);
 	vector<vector<vector<PartTime>>> sector_counts(rad_sec_num, vector<vector<PartTime>>(ang_sec_num, vector<PartTime>())) ;
 
 	try{
@@ -71,14 +76,16 @@ vector<PartTime> FBBCDetector::PassThrowMCP(const size_t mcp_num){
 			double eta_part = atanh(part.Pz/part.P);
 			double DR = (r_out-r_in)/rad_sec_num;
 			double DPHI = 2*PI/ang_sec_num;
-			if (eta_part > RZtoEta(r_in, detect_dist) || eta_part < RZtoEta(r_out, detect_dist) ) continue;
+			if (eta_part > max(RZtoEta(r_in, detect_dist), RZtoEta(r_out, detect_dist))
+			 || eta_part < min(RZtoEta(r_in, detect_dist), RZtoEta(r_out, detect_dist)) ) continue;
 			for(size_t r = 0; r < rad_sec_num; r++)
 			{
-				if (eta_part > RZtoEta(r_in+r*DR, detect_dist) || eta_part < RZtoEta(r_in+(r+1)*DR, detect_dist) ) continue;
+				if (eta_part > max(RZtoEta(r_in+r*DR, detect_dist), RZtoEta(r_in+(r+1)*DR, detect_dist))
+				|| eta_part < min(RZtoEta(r_in+r*DR, detect_dist), RZtoEta(r_in+(r+1)*DR, detect_dist))  ) continue;
 				for (size_t phi = 0; phi < ang_sec_num; phi++)
 				{
 					if (part.Phi > -PI+(phi+1)*DPHI || part.Phi < -PI+phi*DPHI ) continue;
-					double number = distribution(generator);
+					double number = GetRandomNumber(0, 1);
 					if (number > efficiency) continue;
 					double detect_time = (part.E/part.Pz)*detect_dist/(c*c);
 					sector_counts[r][phi].push_back({detect_time, part.Id});
@@ -125,9 +132,9 @@ vector<PartTime> FBBCDetector::PassThrowMCP(const size_t mcp_num){
 }
 ////
 vector<vector<PartTime>> FBBCDetector::PassThrowDetector(){
-	vector<vector<PartTime>> result(plates_number);
+	vector<vector<PartTime>> result;
 	for(size_t i = 0; i < plates_number; i++){
-		result.push_back(PassThrowMCP(i));
+		result.push_back(PassThrowMCP(i)); // проблема с пустыми детекторами - решить
 	}
 	return result;
 }
