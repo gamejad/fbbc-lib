@@ -13,7 +13,7 @@ using PartTime = pair<double, int>; // {time, partID}
 const double PI = 3.14159265359;
 
 double RZtoEta();
-double GetRandomNumber(const double first=0, const double last=1);
+double GetRandomNumber(const double first, const double last);
 //........................................................................
 struct Particle{
 	int Id;
@@ -51,7 +51,7 @@ public:
 		const vector<vector<double>> GetPlatesPseudorapidity() const;
 
 		void SetParticles(const vector<Particle> parts);
-		vector<vector<PartTime>> GetOutput();
+		vector<vector<PartTime>> GetOutputVector();
 
 private:
 	vector<double> plates_distances; // MCPs' distances from center (sorted)

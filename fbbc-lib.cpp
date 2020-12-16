@@ -2,6 +2,7 @@
 #include "fbbc-lib.h"
 #include <exception>
 #include <list>
+#include <iostream>
 
 
 double RZtoEta(double r, double z){
@@ -128,7 +129,6 @@ vector<PartTime> FBBCDetector::PassThrowMCP(const size_t mcp_num){
 	} catch (const out_of_range& e) {
 			cerr << "Error! There is no MCP with number " << mcp_num << endl;
 	}
-
 }
 ////
 vector<vector<PartTime>> FBBCDetector::PassThrowDetector(){
@@ -139,6 +139,6 @@ vector<vector<PartTime>> FBBCDetector::PassThrowDetector(){
 	return result;
 }
 ////
-vector<vector<PartTime>> FBBCDetector::GetOutput(){
+vector<vector<PartTime>> FBBCDetector::GetOutputVector(){
 	return PassThrowDetector();
 }
