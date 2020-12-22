@@ -62,7 +62,7 @@ const vector<vector<double>> FBBCDetector::GetPlatesPseudorapidity() const{
 	return result;
 }
 ////
-void FBBCDetector::SetParticles(const vector<Particle> parts){
+void FBBCDetector::SetParticlesFBBC(const vector<ParticleFBBC> parts){
 	particles = parts;
 }
 ////

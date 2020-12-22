@@ -15,7 +15,7 @@ const double PI = 3.14159265359;
 double RZtoEta();
 double GetRandomNumber(const double first, const double last);
 //........................................................................
-struct Particle{
+struct ParticleFBBC{
 	int Id;
 	double E;
 	double P;
@@ -50,7 +50,7 @@ public:
 		const vector<double> GetPlatesDistances() const;
 		const vector<vector<double>> GetPlatesPseudorapidity() const;
 
-		void SetParticles(const vector<Particle> parts);
+		void SetParticlesFBBC(const vector<ParticleFBBC> parts);
 		vector<vector<PartTime>> GetOutputVector();
 
 private:
@@ -63,7 +63,7 @@ private:
 	double efficiency; // efficiency of MCP, 1 = 100%
 	double time_prec; // ps,
 
-	vector<Particle> particles; // particles in event
+	vector<ParticleFBBC> particles; // particles in event
 
 	vector<PartTime> PassThrowMCP(const size_t mcp_num); //return vector<{time, PartID}>
 	vector<vector<PartTime>> PassThrowDetector(); // return vector<PassThrowMCP>
