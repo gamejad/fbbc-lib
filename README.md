@@ -1,5 +1,5 @@
 # fbbc-lib
-C++ library for numerical FBBC-detector simulation (for NICA project).
+C++ library for numerical FBBC-detector simulations (for NICA project).
 
 ## This library contains of 3 files:
 - **fbbc-lib.h** which contains function prototypes and in which our
@@ -7,14 +7,14 @@ FBBC-class members and ParticleFBBC structure are defined;
 
 - **fbbc-lib.cpp** in which the methods of your analysis are implemented;
 
-- **triangle_distribution.h** unneccessary suport file, which provide us with triangle random distribution,
+- **triangle_distribution.h** - unneccessary suport file, which provide us with triangle random distribution,
 based on uniform random distribution and Monte-Carlo method calculations; anyway,
 this file is unneccessary for **fbbc-lib** is working.
 
 ## Support Functions description
 
 - **double RZtoEta(double r, double z)** - 
-calculates pseudorapidity Eta using formulas theta=atan(r/z) and Eta=-log(tan(theta/2)),
+calculates pseudorapidity η using formulas theta=atan(r/z) and η=-log(tan(theta/2)),
 where (r,phi,z) is given particle 
 coordinate (in cilindrical coordinates) relatively interaction point (0,0,0).
 
