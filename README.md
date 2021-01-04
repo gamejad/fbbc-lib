@@ -7,13 +7,16 @@ detector with high timing properties was proposed in
 (A.A. Baldin, G.A. Feofilov, P. Har'yuzov, F.F. Valiev, NIMA, v.958, 1 (2020), 162154).
 The FBBC is based on the application of Microchannel plate detectors (Fig.1) for the
 precise determination of arrival times of charged particles produced in the nucleus-nucleus collisions at NICA.
-<img src="https://github.com/vsandul/fbbc-lib/blob/master/pictures/mcp_plate.png" width="200" height="200" />
+
+<img src="https://github.com/vsandul/fbbc-lib/blob/master/pictures/mcp_plate.png" width="340" height="270" />
 
 We supposed FBBC as a two sets of MCPs placed on the left and right sides  symmetrically
 from interaction point (Fig.2). The number of MCPs on the single side is optional.
 We suppose every single MCP as a ring with some inner and outer diameters.
 MCP separated on some amount of sectors, which one of them 
 is connected to read-out electronic channel (Fig.1).
+
+<img src="https://github.com/vsandul/fbbc-lib/blob/master/pictures/fbbc.png" width="420" height="290" />
 
 ## This library contains of 3 files:
 - **fbbc-lib.h** which contains function prototypes and in which our
