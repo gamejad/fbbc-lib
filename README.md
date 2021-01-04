@@ -16,9 +16,7 @@ is connected to read-out electronic channel (Fig.1).
 ## This library contains of 3 files:
 - **fbbc-lib.h** which contains function prototypes and in which our
 FBBC-class members and ParticleFBBC structure are defined;
-
 - **fbbc-lib.cpp** in which the methods of your analysis are implemented;
-
 - **triangle_distribution.h** - unneccessary support file, which provide us with triangle random distribution,
 based on uniform random distribution and Monte-Carlo method calculations; anyway,
 this file is unneccessary for **fbbc-lib** is working.
@@ -89,4 +87,4 @@ every MCP plate;
 - **vector<vector<PartTime>> GetOutputVector()** returns the result of PassThrowDetector() evaluation.
 
 
-You can find an example of fbbc-lib usage in "example script" folder.
+## You can find an example of **fbbc-lib** usage in "example script" folder.
