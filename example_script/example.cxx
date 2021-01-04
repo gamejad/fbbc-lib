@@ -14,27 +14,27 @@
 #include "../triangle_distribution.h"
 
 void example(){
-    vector<double> plt_coords = {-850, -630, -500, 500, 630, 850}; //mm
+    vector<double> plt_coords = {-850, -630, -500, 500, 630, 850}; // MCP plates coordinates, mm
     const int NumOfPlates = plt_coords.size();
-    double rin = 15; //mm
-    double rout = 25; //mm
+    double rin = 15; // inner radius of MCP plate rings, mm
+    double rout = 25; // outer radius of MCP plate rings, mm
     int rad_sec_num = 8;
     int ang_sec_num = 8;
-    double eff = 0.9;
-    double t_prec = 50; //ps
+    double eff = 0.9; // MCP efficiency
+    double t_prec = 50; //MCP readout time precision, ps
     
-    FBBCDetector detector(plt_coords, rin, rout, rad_sec_num, ang_sec_num, eff, t_prec);
+    FBBCDetector detector(plt_coords, rin, rout, rad_sec_num, ang_sec_num, eff, t_prec); // FBBC detector object
     
-    for(const auto i : detector.GetPlatesPseudorapidity())
+    for(const auto i : detector.GetPlatesPseudorapidity()) // write MCP plate's covered pseudorapidity regions
         cout << i[0] << ' ' << i[1] << endl;
     
-    vector <TH1D *> fHistTimeDistr(NumOfPlates);
-    for (int i = 0; i < NumOfPlates; i++)
+    vector <TH1D *> fHistTimeDistr(NumOfPlates);        //create time distribution histograms for particles,
+    for (int i = 0; i < NumOfPlates; i++)                //registered by different MCPs
         fHistTimeDistr[i] = new TH1D (Form("Time distr. %d, %3.1f mm", i+1, plt_coords.at(i)),
                                             "Time distr.; T, ps; counts", 20000, 0, 40000);
     TH1D *fHistZ = new TH1D("Z dist.", "Z dist.", 50, -50, 50);    
     
-    TFile file("Particles.root");    
+    TFile file("Particles.root");     // output data of MC simulation in .root format
     TTree* tree = (TTree*)file.Get("particles");  
     
     const int NMaxTrack = 15000;
@@ -69,32 +69,30 @@ void example(){
         tree->GetEntry(iEvent);
         if ( iEvent % 100 == 0 ) cout << "processing  " << (int)iEvent << "\r"; cout.flush();
         
-        double z_bias = TriangleRandom(-30,30,0); //mm
+        double z_bias = TriangleRandom(-30,30,0); // Z coord. of event, mm
         fHistZ->Fill(z_bias);
-        vector<ParticleFBBC> particles_fbbc;
+        vector<ParticleFBBC> particles_fbbc; // vector of particles in event, converted into ParticleFBBC format
         
         for ( int iTrack = 0; iTrack < ntracks; iTrack++ )
         {
             if(charge[iTrack] == 0) continue;
             double p = sqrt(px[iTrack]*px[iTrack]+py[iTrack]*py[iTrack]+pz[iTrack]*pz[iTrack]);
             double phi = atan2(py[iTrack], px[iTrack]);
-            ParticleFBBC part = {iTrack, p0[iTrack], p, pz[iTrack], phi, z_bias };
-            particles_fbbc.push_back(part);
+            ParticleFBBC part = {iTrack, p0[iTrack], p, pz[iTrack], phi, z_bias }; // create particle in ParticleFBBC format 
+            particles_fbbc.push_back(part);                                        //        
         }
         
-        detector.SetParticlesFBBC(particles_fbbc);
-        auto plates_out = detector.GetOutputVector(); //vec_of_plate<vec_of_particles>
-        
+        detector.SetParticlesFBBC(particles_fbbc); // Set the event to our FBBC detector
+        auto plates_out = detector.GetOutputVector(); //output of FBBC detector processing in format 
+                                                        // vector<vector<pair<double, int>>> (plates<particles<[time, id]>>)
         for(int i = 0; i < NumOfPlates; i++)
-        {   for(const auto [t, id] : plates_out[i])
-            {
+        {   for(const auto [t, id] : plates_out[i]) // fill time distr. histos for all MCP in detector
                 fHistTimeDistr[i]->Fill(t); 
-            }
         }
         
     }
     
-    TFile *fileOutput = new TFile( "example_output.root", "RECREATE" );
+    TFile *fileOutput = new TFile( "example_output.root", "RECREATE" ); //write our histos in output file
     for(const auto hist : fHistTimeDistr)
         hist->Write();
     fHistZ->Write();
