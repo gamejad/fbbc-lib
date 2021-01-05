@@ -93,5 +93,5 @@ every MCP plate;
 
 
 ## You can find an example of **fbbc-lib** usage in "example_script" folder
-For example the result of SMASH event generator 1000 simulations of AuAu collisions at sqrt(s)=11GeV was used.
+For example the result of SMASH event generator(https://smash-transport.github.io/) 1000 simulations of AuAu collisions at sqrt(s)=11GeV was used.
 To run the script one should type in the 'example_script' folder command (from terminal): `root example.cxx`
