@@ -2,7 +2,7 @@
 C++ library for numerical FBBC-detector simulations (for NICA project). 
 
 To meet the challenges of the fast monitoring of the beam-beam collisions of the
-high intensity NICA beams, the compact MCP-based Fast Beam-Beam Collisions (FBBC) 
+high-intensity NICA beams, the compact MCP-based Fast Beam-Beam Collisions (FBBC) 
 detector with high timing properties was proposed in
 (A.A. Baldin, G.A. Feofilov, P. Har'yuzov, F.F. Valiev, NIMA, v.958, 1 (2020), 162154).
 The FBBC is based on the application of Microchannel plate detectors (Fig.1) for the
@@ -10,11 +10,11 @@ precise determination of arrival times of charged particles produced in the nucl
 
 <img src="https://github.com/vsandul/fbbc-lib/blob/master/pictures/mcp_plate.png" width="340" height="270" />
 
-We supposed FBBC as a two sets of MCPs placed on the left and right sides  symmetrically
-from interaction point (Fig.2). The number of MCPs on the single side is optional.
-We suppose every single MCP as a ring with some inner and outer diameters.
-MCP separated on some amount of sectors, which one of them 
-is connected to read-out electronic channel (Fig.1).
+We supposed FBBC as two sets of MCPs placed on the left and right sides symmetrically
+from the interaction point (Fig.2). The number of MCPs on the single side is optional.
+We suppose every single MCP is a ring with some inner and outer diameters.
+MCP separated into some amount of sectors, one of them
+is connected to a read-out electronic channel (Fig.1).
 
 <img src="https://github.com/vsandul/fbbc-lib/blob/master/pictures/fbbc.png" width="420" height="290" />
 
@@ -22,9 +22,9 @@ is connected to read-out electronic channel (Fig.1).
 - **fbbc-lib.h** which contains function prototypes and in which our
 FBBC-class members and ParticleFBBC structure are defined;
 - **fbbc-lib.cpp** in which the methods of your analysis are implemented;
-- **triangle_distribution.h** - unneccessary support file, which provide us with triangle random distribution,
+- **triangle_distribution.h** - unnecessary support file, which provides us with triangle random distribution,
 based on uniform random distribution and Monte-Carlo method calculations; anyway,
-this file is unneccessary for **fbbc-lib** is working.
+this file is unnecessary for **fbbc-lib** is working.
 
 ## Support Functions description
 
@@ -45,10 +45,10 @@ view of a FBBC detector facility) with:
 - momentum **P**,
 - its longitudinal component **Pz**,
 - polar angle **Phi**,
-- **Z** coordinate  of interaction point.
+- **Z** coordinate of interaction point.
 
-With a knowledge of E, P, Pz, Phi and Z we can calculate coordinates of particle contact with MCP plates
-and time of this contact. Index number Id provide us an ability go back from ParticleFBBC to initial
+With knowledge of E, P, Pz, Phi and Z we can calculate coordinates of particle contact with MCP plates
+and the time of this contact. Index number Id provides us an ability to go back from ParticleFBBC to the initial
 particle format (e.g. ROOT branch).
 
 ## FBBCDetector class
@@ -65,7 +65,7 @@ contact with the i-th MCP plate of FBBC.
 - **size_t rad_sec_num** is the number of radial sector separations;
 - **size_t ang_sec_num** is the number of angular sector separations;
 - **double efficiency** is the efficiency of every MCP plate (a probability
-to registrate particle which passed through MCP);
+to register particle which passed through MCP);
 - **double time_prec** is the time precision of every sector of every MCP plate;
 - **vector<ParticleFBBC> particles** is the vector of particles in considered event 
 (converted to ParticleFBBC format);
@@ -94,4 +94,4 @@ every MCP plate;
 
 ## You can find an example of **fbbc-lib** usage in "example_script" folder
 For example the result of SMASH event generator(https://smash-transport.github.io/) 1000 simulations of AuAu collisions at sqrt(s)=11GeV was used.
-To run the script one should type in the 'example_script' folder command (from terminal): `root example.cxx`
+To run the script one should type in the 'example_script' folder command (from a terminal): `root example.cxx`
