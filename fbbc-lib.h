@@ -17,11 +17,11 @@ double GetRandomNumber(const double first, const double last);
 //........................................................................
 struct ParticleFBBC{
 	int Id;
-	double E;
-	double P;
-	double Pz;
-	double Phi;
-	double Z;
+	double E; // GeV
+	double P; // GeV/c
+	double Pz; // GeV/c
+	double Phi; // radian
+	double Z; // mm
 };
 //........................................................................
 
