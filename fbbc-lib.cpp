@@ -105,7 +105,7 @@ vector<PartTime> FBBCDetector::PassThrowMCP(const size_t mcp_num){
 					if(sector_counts_reduced[r][phi].size() == 0){
 						sector_counts_reduced[r][phi].push_back(move(p_t));
 					} else {
-						if(sector_counts_reduced[r][phi].back().first < p_t.first + time_prec){
+						if(sector_counts_reduced[r][phi].back().first < p_t.first - time_prec){
 							sector_counts_reduced[r][phi].push_back(move(p_t));
 						} else continue;
 					}
