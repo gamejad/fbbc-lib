@@ -1,4 +1,4 @@
-# fbbc-lib
+# FBBClib
 C++ library for numerical FBBC-detector simulations (for NICA project). 
 
 To meet the challenges of the fast monitoring of the beam-beam collisions of the
