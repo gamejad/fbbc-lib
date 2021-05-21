@@ -1,4 +1,4 @@
-# fbbc-lib
+# FBBClib
 C++ library for numerical FBBC-detector simulations (for NICA project). 
 
 To meet the challenges of the fast monitoring of the beam-beam collisions of the
@@ -18,13 +18,10 @@ is connected to a read-out electronic channel (Fig.1).
 
 <img src="https://github.com/vsandul/fbbc-lib/blob/master/pictures/fbbc.png" width="420" height="290" />
 
-## This library contains of 3 files:
+## This library contains of 2 major files:
 - **fbbc-lib.h** which contains function prototypes and in which our
 FBBC-class members and ParticleFBBC structure are defined;
 - **fbbc-lib.cpp** in which the methods of your analysis are implemented;
-- **triangle_distribution.h** - unnecessary support file, which provides us with triangle random distribution,
-based on uniform random distribution and Monte-Carlo method calculations; anyway,
-this file is unnecessary for **fbbc-lib** is working.
 
 ## Support Functions description
 

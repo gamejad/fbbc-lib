@@ -8,14 +8,19 @@
 #include "TTree.h"
 #include "TF1.h"
 #include <cmath>
+#include <random>
 
-#include "../fbbc-lib.h"
-#include "../fbbc-lib.cpp"
-#include "../triangle_distribution.h"
+#include "../src/fbbc-lib.h"
+#include "../src/fbbc-lib.cpp"
 
 const Double_t c = 0.299792458; // speed of light, mm/ps
 
 void example(){
+    //for Z vertex gambling
+    std::random_device rd{};
+    std::mt19937 gen{rd()};
+    std::normal_distribution<> d{0,250};
+    
     vector<double> plt_coords = {-850, -630, -500, 500, 630, 850}; // MCP plates coordinates, mm
     const int NumOfPlates = plt_coords.size();
     double rin = 15; // inner radius of MCP plate rings, mm
@@ -32,9 +37,9 @@ void example(){
 
     vector <TH1D *> fHistTimeDistr(NumOfPlates);        //create time distribution histograms for particles,
     for (int i = 0; i < NumOfPlates; i++)                //registered by different MCPs
-        fHistTimeDistr[i] = new TH1D (Form("Time distr. %d, %3.1f mm", i+1, plt_coords.at(i)),
-                                            "Time distr.; T, ps; counts", 20000, 0, 40000);
-    TH1D *fHistZ = new TH1D("Z dist.", "Z dist.", 50, -50, 50);
+        fHistTimeDistr[i] = new TH1D (Form("Time distr. %d, %3.1f mm", i, plt_coords.at(i)),
+                                      Form("Time distr. %d, %3.1f mm; T, ps; counts", i, plt_coords.at(i)), 2000, 0, 40000);
+    TH1D *fHistZ = new TH1D("Z dist.", "Z dist.", 20, -50, 50);
 
     TFile file("Particles.root");     // output data of MC simulation in .root format
     TTree* tree = (TTree*)file.Get("particles");
@@ -69,9 +74,9 @@ void example(){
     for ( int iEvent = 0; iEvent < nEvents; iEvent++)
     {
         tree->GetEntry(iEvent);
-        if ( iEvent % 100 == 0 ) cout << "processing  " << (int)iEvent << "\r"; cout.flush();
+        if ( iEvent % 1 == 0 ) cout << "processing  " << (int)iEvent << "\r"; cout.flush();
 
-        double z_bias = TriangleRandom(-30,30,0); // Z coord. of event, mm
+        double z_bias = d(gen); // Z coord. of event, mm
         fHistZ->Fill(z_bias);
         vector<ParticleFBBC> particles_fbbc; // vector of particles in event, converted into ParticleFBBC format
 
@@ -93,12 +98,22 @@ void example(){
         }
 
     }
+    
+    cout << endl;
 
     TFile *fileOutput = new TFile( "example_output.root", "RECREATE" ); //write our histos in output file
     for(const auto hist : fHistTimeDistr)
         hist->Write();
     fHistZ->Write();
     fileOutput->Close();
+    
+    TCanvas *c1 = new TCanvas("c1","Canvas Example",200,10,1600,1200);
+    c1->Divide(2,1);
+    c1->cd(1);
+    fHistTimeDistr.at(0)->Draw();
+    c1->cd(2);
+    fHistZ->Draw();
+
 
 
 }
