@@ -71,7 +71,7 @@ vector<PartTime> FBBCDetector::PassThrowMCP(const size_t mcp_num){
 	vector<vector<vector<PartTime>>> sector_counts(rad_sec_num, vector<vector<PartTime>>(ang_sec_num, vector<PartTime>())) ;
 
 	try{
-		for(const auto part : particles)
+		for(const auto& part : particles)
 		{
 			double detect_dist  = plates_distances.at(mcp_num) - part.Z;
 			double eta_part = atanh(part.Pz/part.P);
@@ -119,7 +119,7 @@ vector<PartTime> FBBCDetector::PassThrowMCP(const size_t mcp_num){
 			for (size_t phi = 0; phi < ang_sec_num; phi++)
 			{
 				for(auto p_t : sector_counts_reduced[r][phi]){
-					result.push_back(p_t);
+					result.push_back(move(p_t));
 				}
 			}
 		}
