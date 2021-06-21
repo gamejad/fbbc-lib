@@ -7,7 +7,8 @@
 
 double RZtoEta(double r, double z){
 	double theta = atan(r/z);
-	if (theta < 0) theta += PI;
+	if (theta < 0)
+        theta += PI;
 	return -log(tan(theta/2));
 }
 ////
@@ -51,8 +52,8 @@ const vector<double> FBBCDetector::GetPlatesDistances() const{
 	return plates_distances;
 }
 ////
-const vector<vector<double>> FBBCDetector::GetPlatesPseudorapidity() const{
-	vector<vector<double>> result;
+const std::vector<std::vector<double>> FBBCDetector::GetPlatesPseudorapidity() const{
+	std::vector<std::vector<double>> result;
 	for(size_t i = 0; i < plates_number; i++){
 		result.push_back(
 			{min(RZtoEta(r_in, plates_distances.at(i)), RZtoEta(r_out, plates_distances.at(i))),
@@ -62,14 +63,14 @@ const vector<vector<double>> FBBCDetector::GetPlatesPseudorapidity() const{
 	return result;
 }
 ////
-void FBBCDetector::SetParticlesFBBC(const vector<ParticleFBBC> parts){
+void FBBCDetector::SetParticlesFBBC(const std::vector<ParticleFBBC> parts){
 	particles = parts;
 }
 ////
-vector<PartTime> FBBCDetector::PassThrowMCP(const size_t mcp_num){
+std::vector<PartTime> FBBCDetector::PassThrowMCP(const size_t mcp_num){
 	const double c = 0.299792458; // mm/ps
-	vector<vector<vector<PartTime>>> sector_counts(rad_sec_num, vector<vector<PartTime>>(ang_sec_num, vector<PartTime>())) ;
-
+	std::vector<std::vector<std::vector<PartTime>>> sector_counts(rad_sec_num,
+                                                                  std::vector<std::vector<PartTime>>(ang_sec_num, std::vector<PartTime>())) ;
 	try{
 		for(const auto& part : particles)
 		{
@@ -94,8 +95,8 @@ vector<PartTime> FBBCDetector::PassThrowMCP(const size_t mcp_num){
 			}
 		}
 
-		vector<vector<vector<PartTime>>> sector_counts_reduced(rad_sec_num, vector<vector<PartTime>>(ang_sec_num, vector<PartTime>())) ;
-
+		std::vector<std::vector<std::vector<PartTime>>> sector_counts_reduced(rad_sec_num,
+                                                                              std::vector<std::vector<PartTime>>(ang_sec_num, std::vector<PartTime>())) ;
 		for(size_t r = 0; r < rad_sec_num; r++)
 		{
 			for (size_t phi = 0; phi < ang_sec_num; phi++)
@@ -113,7 +114,7 @@ vector<PartTime> FBBCDetector::PassThrowMCP(const size_t mcp_num){
 			}
 		}
 
-		vector<PartTime> result;
+		std::vector<PartTime> result;
 		for(size_t r = 0; r < rad_sec_num; r++)
 		{
 			for (size_t phi = 0; phi < ang_sec_num; phi++)
@@ -127,18 +128,18 @@ vector<PartTime> FBBCDetector::PassThrowMCP(const size_t mcp_num){
 		return result;
 
 	} catch (const out_of_range& e) {
-			cerr << "Error! There is no MCP with number " << mcp_num << endl;
+			std::cerr << "Error! There is no MCP with number " << mcp_num << std::endl;
 	}
 }
 ////
-vector<vector<PartTime>> FBBCDetector::PassThrowDetector(){
-	vector<vector<PartTime>> result;
+std::vector<std::vector<PartTime>> FBBCDetector::PassThrowDetector(){
+	std::vector<std::vector<PartTime>> result;
 	for(size_t i = 0; i < plates_number; i++){
 		result.push_back(PassThrowMCP(i)); // проблема с пустыми детекторами - решить
 	}
 	return result;
 }
 ////
-vector<vector<PartTime>> FBBCDetector::GetOutputVector(){
+std::vector<std::vector<PartTime>> FBBCDetector::GetOutputVector(){
 	return PassThrowDetector();
 }
