@@ -93,7 +93,7 @@ void example(){
         auto plates_out = detector.GetOutputVector(); //output of FBBC detector processing in format
                                                         // vector<vector<pair<double, int>>> (plates<particles<[time, id]>>)
         for(int i = 0; i < NumOfPlates; i++)
-        {   for(const auto [t, id] : plates_out[i]) // fill time distr. histos for all MCP in detector
+        {   for(const auto [t, id, rad_sec, ang_sec] : plates_out[i]) // fill time distr. histos for all MCP in detector
                 fHistTimeDistr[i]->Fill(t);
         }
 

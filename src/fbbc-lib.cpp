@@ -5,6 +5,29 @@
 #include <iostream>
 
 
+bool operator ==(PartTime f1, PartTime f2){
+    if (f1.Id==f2.Id && f1.Time==f2.Time && f1.Rad_sec==f2.Rad_sec && f1.Ang_sec==f2.Ang_sec)
+        return true;
+    else
+        return false;
+}
+
+bool operator >(PartTime f1, PartTime f2){
+    if (f1.Time > f2.Time)
+        return true;
+    else
+        return false;
+}
+
+bool operator <(PartTime f1, PartTime f2){
+    if (f1.Time < f2.Time)
+        return true;
+    else
+        return false;
+}
+
+//-------------------------------------------------------------
+
 double RZtoEta(double r, double z){
 	double theta = atan(r/z);
 	if (theta < 0)
@@ -67,12 +90,12 @@ void FBBCDetector::SetParticlesFBBC(const std::vector<ParticleFBBC> parts){
 	particles = parts;
 }
 ////
-std::vector<PartTime> FBBCDetector::PassThrowMCP(const size_t mcp_num){
-	const double c = 0.299792458; // mm/ps
-	std::vector<std::vector<std::vector<PartTime>>> sector_counts(rad_sec_num,
-                                                                  std::vector<std::vector<PartTime>>(ang_sec_num, std::vector<PartTime>())) ;
+vector<PartTime> FBBCDetector::PassThrowMCP(const size_t mcp_num){
+	const double c = SPEED_OF_LIGHT;
+	vector<vector<vector<PartTime>>> sector_counts(rad_sec_num, vector<vector<PartTime>>(ang_sec_num, vector<PartTime>())) ;
+
 	try{
-		for(const auto& part : particles)
+		for(const auto part : particles)
 		{
 			double detect_dist  = plates_distances.at(mcp_num) - part.Z;
 			double eta_part = atanh(part.Pz/part.P);
@@ -90,13 +113,13 @@ std::vector<PartTime> FBBCDetector::PassThrowMCP(const size_t mcp_num){
 					double number = GetRandomNumber(0, 1);
 					if (number > efficiency) continue;
 					double detect_time = (part.E/part.Pz)*detect_dist/(c*c);
-					sector_counts[r][phi].push_back({detect_time, part.Id});
+					sector_counts[r][phi].push_back({detect_time, part.Id, r, phi});
 				}
 			}
 		}
 
-		std::vector<std::vector<std::vector<PartTime>>> sector_counts_reduced(rad_sec_num,
-                                                                              std::vector<std::vector<PartTime>>(ang_sec_num, std::vector<PartTime>())) ;
+		vector<vector<vector<PartTime>>> sector_counts_reduced(rad_sec_num, vector<vector<PartTime>>(ang_sec_num, vector<PartTime>())) ;
+
 		for(size_t r = 0; r < rad_sec_num; r++)
 		{
 			for (size_t phi = 0; phi < ang_sec_num; phi++)
@@ -106,7 +129,7 @@ std::vector<PartTime> FBBCDetector::PassThrowMCP(const size_t mcp_num){
 					if(sector_counts_reduced[r][phi].size() == 0){
 						sector_counts_reduced[r][phi].push_back(move(p_t));
 					} else {
-						if(sector_counts_reduced[r][phi].back().first < p_t.first - time_prec){
+						if(sector_counts_reduced[r][phi].back().Time < p_t.Time - time_prec){
 							sector_counts_reduced[r][phi].push_back(move(p_t));
 						} else continue;
 					}
@@ -114,13 +137,13 @@ std::vector<PartTime> FBBCDetector::PassThrowMCP(const size_t mcp_num){
 			}
 		}
 
-		std::vector<PartTime> result;
+		vector<PartTime> result;
 		for(size_t r = 0; r < rad_sec_num; r++)
 		{
 			for (size_t phi = 0; phi < ang_sec_num; phi++)
 			{
 				for(auto p_t : sector_counts_reduced[r][phi]){
-					result.push_back(move(p_t));
+					result.push_back(p_t);
 				}
 			}
 		}
@@ -128,7 +151,7 @@ std::vector<PartTime> FBBCDetector::PassThrowMCP(const size_t mcp_num){
 		return result;
 
 	} catch (const out_of_range& e) {
-			std::cerr << "Error! There is no MCP with number " << mcp_num << std::endl;
+			cerr << "Error! There is no MCP with number " << mcp_num << endl;
 	}
 }
 ////

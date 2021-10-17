@@ -68,7 +68,7 @@ to register particle which passed through MCP);
 (converted to ParticleFBBC format);
 
 - **vector<PartTime> PassThrowMCP(const size_t mcp_num)** is the method which "simulates" passage of particles through 
-MCP with a nubmer #mcp_num and returns vector of times of particles passed and registrated through the plate;
+MCP with a nubmer #mcp_num and returns vector of *PartTime*-structures, which contains times of particles passed through the plate and registered by detector, their Ids and the nummer of MCP sector which registered the particle (*PartTime* = {Time of arrival, Particle Id, Radial sector, Angular sector});
 - **vector<vector<PartTime>> PassThrowDetector()** return the vector of the results of PassThrowMCP method 
 calcuations for every MCP plate.
 

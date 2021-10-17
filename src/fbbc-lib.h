@@ -7,9 +7,8 @@
 #include <cmath>
 #include <algorithm>
 
-using PartTime = pair<double, int>; // {time, partID}
-
 const double PI = 3.14159265359;
+const double SPEED_OF_LIGHT = 0.299792458; // mm/ps
 
 double RZtoEta();
 double GetRandomNumber(const double first, const double last);
@@ -21,6 +20,13 @@ struct ParticleFBBC{
 	double Pz; // GeV/c
 	double Phi; // radian
 	double Z; // mm
+};
+
+struct PartTime{
+   double Time;
+   int Id;
+   size_t Rad_sec;
+   size_t Ang_sec;
 };
 //........................................................................
 
