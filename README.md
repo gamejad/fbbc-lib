@@ -13,7 +13,7 @@ precise determination of arrival times of charged particles produced in the nucl
 We supposed FBBC as two sets of MCPs placed on the left and right sides symmetrically
 from the interaction point (Fig.2). The number of MCPs on the single side is optional.
 We suppose every single MCP is a ring with some inner and outer diameters.
-MCP separated into some amount of sectors, one of them
+MCP is separated into some amount of sectors, one of them
 is connected to a read-out electronic channel (Fig.1).
 
 <img src="https://github.com/vsandul/fbbc-lib/blob/master/pictures/fbbc.png" width="420" height="290" />
@@ -36,20 +36,30 @@ If no arguments, given interval equals [0, 1].
 ## ParticleFBBC structure
 In short, this structure defines the way that FBBC "see" particles.
 It is supposed, that every particle in a single collision can be fully described (from a point of
-view of a FBBC detector facility) with:
+view of the FBBC detector facility) with:
 - index number **Id**,
 - energy **E**,
 - momentum **P**,
 - its longitudinal component **Pz**,
 - polar angle **Phi**,
-- **Z** coordinate of interaction point.
+- **Z** coordinate of the interaction point.
 
-With knowledge of E, P, Pz, Phi and Z we can calculate coordinates of particle contact with MCP plates
+With knowledge of E, P, Pz, Phi, and Z we can calculate coordinates of particle contact with MCP plates
 and the time of this contact. Index number Id provides us an ability to go back from ParticleFBBC to the initial
 particle format (e.g. ROOT branch).
 
+## PartTime structure
+This structure contains the possible information about times of particles passed through the plate and registered by the detector, their Ids, and the number of MCP sector which registered the particle. Shortly speaking, *PartTime* is constructed with the next fields:
+- Time of arrival of a particle on MCP **Time**,
+- particle index number **Id**,
+- number of radial sector **Rad_sec**, which particle passed through,
+- number of angular sector **Ang_sec**, which particle passed through.
+
+This information can be extracted later since method *GetOutputVector()* (see later) returns vectors of this structures.
+
+
 ## FBBCDetector class
-This is the main library class, which simulates the work of FBBC detector facility. At the input it accepts 
+This is the main library class, which simulates the work of the FBBC detector facility. At the input it accepts 
 a vector of particles in ParticleFBBC format (vector<ParticleFBBC>). At the output is returns a vector of vectors
 of pairs <time, Id>, where Id is particle index number Id (see ParticleFBBC structure) and time is the time of particle
 contact with the i-th MCP plate of FBBC.
@@ -68,7 +78,7 @@ to register particle which passed through MCP);
 (converted to ParticleFBBC format);
 
 - **vector<PartTime> PassThrowMCP(const size_t mcp_num)** is the method which "simulates" passage of particles through 
-MCP with a nubmer #mcp_num and returns vector of *PartTime*-structures, which contains times of particles passed through the plate and registered by detector, their Ids and the nummer of MCP sector which registered the particle (*PartTime* = {Time of arrival, Particle Id, Radial sector, Angular sector});
+MCP with a number *mcp_num* and returns vector of *PartTime*-structures, which contains 
 - **vector<vector<PartTime>> PassThrowDetector()** return the vector of the results of PassThrowMCP method 
 calcuations for every MCP plate.
 
